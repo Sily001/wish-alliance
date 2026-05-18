@@ -15,6 +15,7 @@
     --line-dark: rgba(255,255,255,0.10);
     --line-light: rgba(0,0,0,0.10);
     --gradient: linear-gradient(135deg, #ff5e3a 0%, #ff2d76 35%, #a259ff 70%, #2997ff 100%);
+    --gradient-soft: linear-gradient(135deg, rgba(255,94,58,0.18), rgba(162,89,255,0.18), rgba(41,151,255,0.18));
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -51,12 +52,34 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 14vh 6vw 12vh;
+    padding: 12vh 6vw 10vh;
     text-align: center;
     overflow: hidden;
   }
   .slide.dark { background: var(--bg-dark); color: var(--ink-dark); }
   .slide.light { background: var(--bg-light); color: var(--ink-light); }
+
+  /* 柔光背景：每屏一个氛围 */
+  .slide .ambient {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255,94,58,0.10) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(41,151,255,0.10) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(162,89,255,0.06) 0%, transparent 60%);
+    transform: scale(1.05);
+  }
+  .slide.in-view .ambient { opacity: 1; }
+  .slide.light .ambient {
+    background:
+      radial-gradient(circle at 20% 30%, rgba(255,94,58,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(41,151,255,0.06) 0%, transparent 40%);
+  }
+  .slide > * { position: relative; z-index: 1; }
 
   /* === 顶部导航 === */
   .nav {
@@ -81,17 +104,21 @@
     color: var(--ink-light);
     border-bottom-color: rgba(0,0,0,0.08);
   }
-  .nav .brand {
-    font-weight: 600;
-    color: inherit;
-    opacity: 0.92;
-  }
+  .nav .brand { font-weight: 600; opacity: 0.92; }
   .nav .brand .dot { opacity: 0.5; margin: 0 6px; }
   .nav .pager {
     font-variant-numeric: tabular-nums;
-    font-weight: 500;
-    opacity: 0.6;
+    font-weight: 500; opacity: 0.6;
     letter-spacing: 0.04em;
+  }
+  /* 顶部进度细线 */
+  .progress {
+    position: absolute;
+    left: 0; bottom: -1px;
+    height: 2px;
+    width: 0%;
+    background: var(--gradient);
+    transition: width 0.5s cubic-bezier(.2,.6,.2,1);
   }
 
   /* === 右侧导航点 === */
@@ -114,19 +141,15 @@
     padding: 0;
     transition: all 0.35s cubic-bezier(.4,0,.2,1);
   }
-  .dots button.active {
-    background: #fff;
-    transform: scale(1.4);
-  }
-  .nav.on-light ~ .dots button { background: rgba(0,0,0,0.25); }
-  .nav.on-light ~ .dots button.active { background: #000; }
+  .dots button.active { background: #fff; transform: scale(1.4); }
+  body.theme-light .dots button { background: rgba(0,0,0,0.25); }
+  body.theme-light .dots button.active { background: #000; }
 
   /* === 内容 === */
   .eyebrow {
     font-size: clamp(13px, 1.05vw, 16px);
     font-weight: 600;
     letter-spacing: 0.01em;
-    text-transform: none;
     margin-bottom: clamp(18px, 2.4vw, 28px);
     background: var(--gradient);
     -webkit-background-clip: text;
@@ -149,17 +172,21 @@
     margin: 0 auto;
   }
   h1.hero.tight { max-width: 14ch; }
-  h1.hero .grad {
+  h1.hero .grad,
+  .grad-text {
     background: var(--gradient);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    padding-right: 0.04em;
+    background-size: 200% 100%;
+    background-position: 0% 50%;
+    animation: gradflow 8s linear infinite;
   }
-  h1.hero .muted-d { color: var(--sub-dark); }
-  h1.hero .muted-l { color: var(--sub-light); }
+  @keyframes gradflow {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
 
-  /* 超大 cover 字 */
   h1.cover-title {
     font-size: clamp(64px, 11vw, 168px);
     font-weight: 600;
@@ -167,48 +194,23 @@
     letter-spacing: -0.045em;
     margin: 0 auto;
   }
-  h1.cover-title .grad {
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
+  h1.cover-title .grad,
+  h1.cover-title .grad-text { animation: gradflow 8s linear infinite; }
 
   .lead {
     margin-top: clamp(22px, 3vw, 36px);
     font-size: clamp(19px, 1.55vw, 24px);
     font-weight: 400;
-    line-height: 1.45;
+    line-height: 1.5;
     letter-spacing: -0.015em;
     color: var(--sub-dark);
     max-width: 640px;
   }
   .slide.light .lead { color: var(--sub-light); }
-  .lead strong {
-    color: var(--ink-dark);
-    font-weight: 600;
-  }
+  .lead strong { color: var(--ink-dark); font-weight: 600; }
   .slide.light .lead strong { color: var(--ink-light); }
 
-  .link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: clamp(28px, 3vw, 40px);
-    font-size: clamp(16px, 1.2vw, 19px);
-    font-weight: 400;
-    letter-spacing: -0.015em;
-    color: #2997ff;
-    text-decoration: none;
-  }
-  .link::after {
-    content: "›";
-    margin-left: 2px;
-    transition: transform 0.25s ease;
-  }
-  .link:hover::after { transform: translateX(3px); }
-
-  /* 列表型 */
+  /* 列表 */
   .stack {
     margin-top: clamp(36px, 5vw, 64px);
     display: grid;
@@ -232,7 +234,6 @@
     font-weight: 600;
     color: var(--sub-dark);
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.02em;
   }
   .slide.light .stack .item .n { color: var(--sub-light); }
   .stack .item .t {
@@ -242,7 +243,7 @@
     letter-spacing: -0.02em;
   }
 
-  /* 双栏对比 */
+  /* 对比 */
   .compare {
     margin-top: clamp(40px, 5vw, 64px);
     display: grid;
@@ -264,17 +265,7 @@
     min-height: 40vh;
     justify-content: space-between;
   }
-  .slide.light .compare .card {
-    background: rgba(0,0,0,0.025);
-    border-color: var(--line-light);
-  }
-  .compare .card .tag {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    color: var(--sub-dark);
-  }
-  .slide.light .compare .card .tag { color: var(--sub-light); }
+  .compare .card .tag { font-size: 13px; font-weight: 600; color: var(--sub-dark); }
   .compare .card .text {
     font-size: clamp(26px, 2.8vw, 40px);
     font-weight: 600;
@@ -294,7 +285,7 @@
     color: transparent;
   }
 
-  /* 三段公式 */
+  /* 三段 */
   .triplet {
     margin-top: clamp(40px, 5vw, 72px);
     display: grid;
@@ -315,12 +306,7 @@
     min-height: 38vh;
     justify-content: center;
   }
-  .triplet .pill .num {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--sub-dark);
-    letter-spacing: 0.04em;
-  }
+  .triplet .pill .num { font-size: 14px; font-weight: 600; color: var(--sub-dark); }
   .triplet .pill .word {
     font-size: clamp(36px, 4.6vw, 64px);
     font-weight: 600;
@@ -329,6 +315,8 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    background-size: 200% 100%;
+    animation: gradflow 8s linear infinite;
   }
   .triplet .pill .desc {
     font-size: clamp(14px, 1.1vw, 16px);
@@ -336,7 +324,7 @@
     line-height: 1.5;
   }
 
-  /* 引文超大 */
+  /* 引言屏 */
   .pullquote {
     font-size: clamp(40px, 6.5vw, 96px);
     font-weight: 600;
@@ -345,45 +333,192 @@
     max-width: 16ch;
     margin: 0 auto;
   }
-  .pullquote .grad {
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+  .pullquote .grad { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; background-size: 200% 100%; animation: gradflow 8s linear infinite; }
+
+  /* === 横向画廊 === */
+  .gallery-slide {
+    padding: 12vh 0 10vh;
+    align-items: stretch;
+    text-align: left;
+  }
+  .gallery-slide .gallery-head {
+    text-align: center;
+    padding: 0 6vw;
+  }
+  .gallery-wrap {
+    flex: 1;
+    width: 100%;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    display: flex;
+    gap: clamp(16px, 2vw, 28px);
+    padding: clamp(32px, 4vw, 56px) max(6vw, calc(50vw - 320px));
+    align-items: stretch;
+    margin-top: clamp(20px, 2.4vw, 36px);
+  }
+  .gallery-wrap::-webkit-scrollbar { display: none; }
+  .gallery-card {
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    flex: 0 0 min(640px, 86vw);
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    border: 1px solid var(--line-dark);
+    backdrop-filter: blur(20px);
+    padding: clamp(28px, 3vw, 44px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 1.6vw, 24px);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s ease, border-color 0.4s ease;
+  }
+  .gallery-card::before {
+    content: "";
+    position: absolute;
+    inset: -50% -20% auto auto;
+    width: 70%; height: 60%;
+    background: var(--gradient-soft);
+    filter: blur(60px);
+    pointer-events: none;
+  }
+  .gallery-card .case {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sub-dark);
+    letter-spacing: 0.04em;
+  }
+  .gallery-card .who {
+    font-size: clamp(32px, 4vw, 56px);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .gallery-card .who .grad { background: var(--gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .gallery-card .claim {
+    font-size: clamp(22px, 2.4vw, 32px);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    margin-top: clamp(12px, 1.4vw, 20px);
+  }
+  .gallery-card .body-text {
+    font-size: clamp(15px, 1.2vw, 18px);
+    color: var(--sub-dark);
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+    margin-top: auto;
+    padding-top: clamp(20px, 2vw, 28px);
+    border-top: 1px solid var(--line-dark);
+  }
+  .gallery-card .body-text strong { color: var(--ink-dark); font-weight: 600; }
+
+  /* 画廊控制 */
+  .gallery-ctrl {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 0 6vw;
+    margin-bottom: 8px;
+  }
+  .gallery-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--line-dark);
+    color: var(--ink-dark);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.25s ease;
+  }
+  .gallery-btn:hover {
+    background: rgba(255,255,255,0.16);
+    transform: scale(1.06);
+  }
+  .gallery-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .gallery-pages {
+    display: flex;
+    gap: 6px;
+  }
+  .gallery-pages span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    transition: all 0.3s ease;
+  }
+  .gallery-pages span.active {
+    width: 24px;
+    border-radius: 3px;
+    background: var(--ink-dark);
   }
 
-  /* 滚动动画 */
-  .slide .eyebrow,
-  .slide .hero,
-  .slide .cover-title,
-  .slide .lead,
-  .slide .stack,
-  .slide .compare,
-  .slide .triplet,
-  .slide .pullquote,
-  .slide .link {
+  /* === 分享按钮 === */
+  .share-btn {
+    position: absolute;
+    bottom: clamp(24px, 4vh, 48px);
+    right: clamp(24px, 4vw, 48px);
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px 10px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--line-dark);
+    color: var(--ink-dark);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .share-btn:hover {
+    background: rgba(255,255,255,0.14);
+    transform: translateY(-1px);
+  }
+  .share-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .slide.light .share-btn {
+    background: rgba(0,0,0,0.05);
+    color: var(--ink-light);
+    border-color: var(--line-light);
+  }
+  .slide.light .share-btn:hover { background: rgba(0,0,0,0.10); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 48px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 12px 20px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    backdrop-filter: blur(12px);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 500;
     opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.9s cubic-bezier(.2,.6,.2,1), transform 0.9s cubic-bezier(.2,.6,.2,1);
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(.2,.7,.2,1);
   }
-  .slide.in-view .eyebrow { opacity: 1; transform: none; transition-delay: 0.05s; }
-  .slide.in-view .hero,
-  .slide.in-view .cover-title,
-  .slide.in-view .pullquote { opacity: 1; transform: none; transition-delay: 0.18s; }
-  .slide.in-view .lead { opacity: 1; transform: none; transition-delay: 0.34s; }
-  .slide.in-view .stack,
-  .slide.in-view .compare,
-  .slide.in-view .triplet { opacity: 1; transform: none; transition-delay: 0.42s; }
-  .slide.in-view .link { opacity: 1; transform: none; transition-delay: 0.55s; }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 
-  /* footer small */
+  /* end meta */
   .end-meta {
     margin-top: clamp(32px, 4vw, 48px);
     font-size: 13px;
     color: var(--sub-dark);
-    letter-spacing: -0.005em;
   }
-  .slide.light .end-meta { color: var(--sub-light); }
 
   /* hint */
   .hint {
@@ -412,9 +547,41 @@
     50% { transform: rotate(45deg) translate(3px,3px); opacity: 1; }
   }
 
+  /* 入场动画 */
+  .slide .eyebrow,
+  .slide h1.hero,
+  .slide h1.cover-title,
+  .slide .lead,
+  .slide .stack,
+  .slide .compare,
+  .slide .triplet,
+  .slide .pullquote,
+  .slide .gallery-head,
+  .slide .gallery-wrap,
+  .slide .gallery-ctrl,
+  .slide .end-meta,
+  .slide .share-btn {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.9s cubic-bezier(.2,.6,.2,1), transform 0.9s cubic-bezier(.2,.6,.2,1);
+  }
+  .slide.in-view .eyebrow,
+  .slide.in-view .gallery-head { opacity: 1; transform: none; transition-delay: 0.05s; }
+  .slide.in-view h1.hero,
+  .slide.in-view h1.cover-title,
+  .slide.in-view .pullquote { opacity: 1; transform: none; transition-delay: 0.2s; }
+  .slide.in-view .lead { opacity: 1; transform: none; transition-delay: 0.36s; }
+  .slide.in-view .stack,
+  .slide.in-view .compare,
+  .slide.in-view .triplet,
+  .slide.in-view .gallery-wrap { opacity: 1; transform: none; transition-delay: 0.42s; }
+  .slide.in-view .gallery-ctrl { opacity: 1; transform: none; transition-delay: 0.5s; }
+  .slide.in-view .end-meta,
+  .slide.in-view .share-btn { opacity: 1; transform: none; transition-delay: 0.6s; }
+
   /* 移动端 */
   @media (max-width: 760px) {
-    .slide { padding: 14vh 5vw 10vh; }
+    .slide { padding: 12vh 5vw 9vh; }
     .compare { grid-template-columns: 1fr; }
     .triplet { grid-template-columns: 1fr; gap: 14px; }
     .triplet .pill { min-height: auto; padding: 24px; }
@@ -423,6 +590,11 @@
     h1.cover-title { font-size: clamp(56px, 16vw, 96px); }
     .pullquote { font-size: clamp(36px, 10vw, 64px); }
     .lead { font-size: 17px; }
+    .gallery-wrap { padding-left: 5vw; padding-right: 5vw; }
+    .gallery-card { padding: 24px; }
+    .gallery-card .who { font-size: clamp(28px, 8vw, 40px); }
+    .gallery-card .claim { font-size: clamp(20px, 5vw, 26px); }
+    .share-btn { bottom: 64px; right: 16px; }
   }
 </style>
 </head>
@@ -430,39 +602,63 @@
 
 <header class="nav" id="nav">
   <div class="brand">希望者联盟<span class="dot">·</span>Episode 9.29</div>
-  <div class="pager"><span id="cur">01</span> / <span id="total">16</span></div>
+  <div class="pager"><span id="cur">01</span> / <span id="total">15</span></div>
+  <div class="progress" id="progress"></div>
 </header>
 
 <div class="dots" id="dots"></div>
+<div class="toast" id="toast">已保存到下载文件夹</div>
 
 <main class="deck" id="deck">
 
   <!-- 1 封面 -->
   <section class="slide dark" data-theme="dark">
+    <div class="ambient"></div>
     <div class="eyebrow">Field Notes · 09 / 29</div>
     <h1 class="cover-title">希望者<br><span class="grad">联盟。</span></h1>
     <p class="lead">一场饭桌，一份笔记。<br>关于 IP、价值差，以及那些不能说的事。</p>
     <div class="hint"><span>Scroll</span><span class="chev"></span></div>
   </section>
 
-  <!-- 2 张雪峰 -->
-  <section class="slide dark" data-theme="dark">
-    <div class="eyebrow">第 01 集 · 教育</div>
-    <h1 class="hero tight">封掉张雪峰，<br>封掉的是<br><span class="grad">教育公平。</span></h1>
-    <p class="lead">没有人脉的家庭，第一时间失去信息。<br>「选专业」这件事，决定一个孩子未来十年的路。</p>
+  <!-- 2 横向画廊：人物 -->
+  <section class="slide dark gallery-slide" data-theme="dark">
+    <div class="ambient"></div>
+    <div class="gallery-head">
+      <div class="eyebrow">案例 · 三个人</div>
+      <h1 class="hero tight">他们说了，<br>就<span class="grad">承担。</span></h1>
+    </div>
+    <div class="gallery-wrap" id="gallery">
+      <article class="gallery-card">
+        <div class="case">CASE 01 · 教育</div>
+        <div class="who">张<span class="grad">雪峰</span></div>
+        <div class="claim">封掉他，<br>封掉的是教育公平。</div>
+        <div class="body-text">没有人脉的家庭，<strong>第一时间失去信息</strong>。「选专业」这件事，决定一个孩子未来十年的路。</div>
+      </article>
+      <article class="gallery-card">
+        <div class="case">CASE 02 · 影响力</div>
+        <div class="who">蓝<span class="grad">战非</span></div>
+        <div class="claim">粉丝量越大，<br>越要承担教育的功能。</div>
+        <div class="body-text">不是想不想承担，<strong>是已经在承担</strong>。规模越大，私域言行就越溢出到公域。</div>
+      </article>
+      <article class="gallery-card">
+        <div class="case">CASE 03 · 认知</div>
+        <div class="who">鸡<span class="grad">排哥</span></div>
+        <div class="claim">为什么是他？<br>底层认知很清晰。</div>
+        <div class="body-text">清晰认知 × 持续输出 = <strong>普通人能撬动的最大杠杆</strong>。这就是做 IP 的意义。</div>
+      </article>
+    </div>
+    <div class="gallery-ctrl">
+      <button class="gallery-btn" id="gPrev" aria-label="上一个">‹</button>
+      <div class="gallery-pages" id="gPages"></div>
+      <button class="gallery-btn" id="gNext" aria-label="下一个">›</button>
+    </div>
   </section>
 
-  <!-- 3 蓝战非 -->
-  <section class="slide light" data-theme="light">
-    <div class="eyebrow">第 02 集 · 影响力</div>
-    <h1 class="hero">粉丝量越大，<br>越要承担<br><span class="grad">教育的功能。</span></h1>
-    <p class="lead">不是你想不想承担，<strong>而是你已经在承担。</strong><br>规模越大，私域言行就越溢出到公域。</p>
-  </section>
-
-  <!-- 4 户晨风 / 三只手 -->
+  <!-- 3 户晨风 / 三只手 -->
   <section class="slide dark" data-theme="dark">
-    <div class="eyebrow">第 03 集 · 户晨风</div>
-    <h1 class="hero tight">政府的<br><span class="grad">三个功能。</span></h1>
+    <div class="ambient"></div>
+    <div class="eyebrow">户晨风 · 看穿规则</div>
+    <h1 class="hero tight">政府的<br><span class="grad">三只手。</span></h1>
     <div class="stack">
       <div class="item">
         <div class="n">01</div>
@@ -479,9 +675,10 @@
     </div>
   </section>
 
-  <!-- 5 服务经济 (对比) -->
+  <!-- 4 服务经济 -->
   <section class="slide dark" data-theme="dark">
-    <div class="eyebrow">第 04 集 · 周期</div>
+    <div class="ambient"></div>
+    <div class="eyebrow">周期 · 服务经济</div>
     <h1 class="hero tight">服务经济<br>会<span class="grad">越来越强。</span></h1>
     <div class="compare">
       <div class="card warm">
@@ -495,106 +692,128 @@
     </div>
   </section>
 
-  <!-- 6 不能聊 (金句) -->
-  <section class="slide light" data-theme="light">
+  <!-- 5 不能聊 (金句+分享) -->
+  <section class="slide light quote-slide" data-theme="light"
+           data-quote-title="有些事就是不能聊。"
+           data-quote-sub="遵守了不一定有好处，但不遵守，一定有坏处。"
+           data-quote-tag="边界">
+    <div class="ambient"></div>
     <div class="eyebrow">第 05 集 · 边界</div>
     <p class="pullquote">有些事就是 <span class="grad">不能聊。</span></p>
     <p class="lead">遵守了不一定有好处，<br>但<strong>不遵守，一定有坏处</strong>。</p>
+    <button class="share-btn" data-share>
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+      <span>保存图片</span>
+    </button>
   </section>
 
-  <!-- 7 闷声 -->
+  <!-- 6 闷声 -->
   <section class="slide dark" data-theme="dark">
+    <div class="ambient"></div>
     <div class="eyebrow">第 06 集 · 财不外露</div>
     <h1 class="hero">闷声赚大钱，<br>不要<span class="grad">太溢出。</span></h1>
     <p class="lead">过得好是事实，让别人看见是选择。<br><strong>前者保护你，后者出卖你。</strong></p>
   </section>
 
-  <!-- 8 IP营销 -->
+  <!-- 7 IP 剧本 -->
   <section class="slide dark" data-theme="dark">
+    <div class="ambient"></div>
     <div class="eyebrow">第 07 集 · IP 剧本</div>
     <h1 class="hero">每一次都说，<br>自己<span class="grad">很难、很痛苦。</span></h1>
     <p class="lead">IP 靠嘴赚钱。剧本要<strong>单一、重复</strong>。<br>炫富一时爽——哪天往下走，<strong>踩你一脚的成本会非常低</strong>。</p>
   </section>
 
-  <!-- 9 朋友圈 -->
+  <!-- 8 朋友圈 -->
   <section class="slide light" data-theme="light">
+    <div class="ambient"></div>
     <div class="eyebrow">第 08 集 · 日常</div>
     <h1 class="hero">朋友圈要 <span class="grad">示弱。</span></h1>
     <p class="lead">不要天天发跟谁见面。<br>每一次展示，都是邀请<strong>评价、嫉妒、和等你跌倒的人</strong>。</p>
   </section>
 
-  <!-- 10 环境机制 (引文) -->
-  <section class="slide dark" data-theme="dark">
+  <!-- 9 没有力气 (金句+分享) -->
+  <section class="slide dark quote-slide" data-theme="dark"
+           data-quote-title="已经没有力气出门，也没有力气改变自己。"
+           data-quote-sub="环境机制悄悄把人锁住——意识到的那天，才是松绑的起点。"
+           data-quote-tag="环境机制">
+    <div class="ambient"></div>
     <p class="pullquote">已经<span class="grad">没有力气</span>出门，<br>也没有力气，<br>去改变自己。</p>
     <p class="end-meta">— 关于环境机制</p>
+    <button class="share-btn" data-share>
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+      <span>保存图片</span>
+    </button>
   </section>
 
-  <!-- 11 市场化反馈 -->
+  <!-- 10 反馈市场 -->
   <section class="slide dark" data-theme="dark">
-    <div class="eyebrow">第 09 集 · 反馈</div>
+    <div class="ambient"></div>
+    <div class="eyebrow">第 10 集 · 反馈</div>
     <h1 class="hero">越早把自己，<br>交给 <span class="grad">市场检验。</span></h1>
     <p class="lead">朋友的夸奖、家人的鼓励，都是带感情的噪音。<br><strong>市场不会安慰你，但市场不会骗你。</strong></p>
   </section>
 
-  <!-- 12 为什么做 IP -->
+  <!-- 11 做 IP -->
   <section class="slide light" data-theme="light">
-    <div class="eyebrow">第 10 集 · 为什么是 IP</div>
+    <div class="ambient"></div>
+    <div class="eyebrow">第 11 集 · 为什么是 IP</div>
     <h1 class="hero">做 IP，<br>能影响 <span class="grad">国家。</span></h1>
-    <p class="lead">鸡排哥之所以是鸡排哥——<strong>底层认知非常清晰。</strong><br>清晰认知 × 持续输出 = 普通人能撬动的最大杠杆。</p>
+    <p class="lead">清晰认知 × 持续输出 = <strong>普通人能撬动的最大杠杆</strong>。<br>这是为什么，要尽早开始。</p>
   </section>
 
-  <!-- 13 价值差 -->
+  <!-- 12 价值差 -->
   <section class="slide dark" data-theme="dark">
-    <div class="eyebrow">第 11 集 · 现实</div>
+    <div class="ambient"></div>
+    <div class="eyebrow">第 12 集 · 现实</div>
     <h1 class="hero tight">价值差太大，<br>对方会觉得你<br><span class="grad">不是人。</span></h1>
     <p class="lead">好看，是一种天生的高价值。<br><strong>承认它，你才能跳出它。</strong></p>
   </section>
 
-  <!-- 14 公式 三段 -->
+  <!-- 13 公式 -->
   <section class="slide dark" data-theme="dark">
-    <div class="eyebrow">第 12 集 · 一生只做一件事</div>
+    <div class="ambient"></div>
+    <div class="eyebrow">第 13 集 · 一生只做一件事</div>
     <h1 class="hero tight">值得做一辈子的事，<br>只有<span class="grad">这一种。</span></h1>
     <div class="triplet">
-      <div class="pill">
-        <div class="num">01</div>
-        <div class="word">低成本</div>
-        <div class="desc">投入小到可以承受失败。</div>
-      </div>
-      <div class="pill">
-        <div class="num">02</div>
-        <div class="word">高价值</div>
-        <div class="desc">对别人有不可替代的意义。</div>
-      </div>
-      <div class="pill">
-        <div class="num">03</div>
-        <div class="word">可持续</div>
-        <div class="desc">能做十年、二十年。</div>
-      </div>
+      <div class="pill"><div class="num">01</div><div class="word">低成本</div><div class="desc">投入小到可以承受失败。</div></div>
+      <div class="pill"><div class="num">02</div><div class="word">高价值</div><div class="desc">对别人有不可替代的意义。</div></div>
+      <div class="pill"><div class="num">03</div><div class="word">可持续</div><div class="desc">能做十年、二十年。</div></div>
     </div>
   </section>
 
-  <!-- 15 清朗 -->
+  <!-- 14 清朗 -->
   <section class="slide dark" data-theme="dark">
-    <div class="eyebrow">第 13 集 · 风向</div>
+    <div class="ambient"></div>
+    <div class="eyebrow">第 14 集 · 风向</div>
     <h1 class="hero"><span class="grad">清朗行动。</span></h1>
     <p class="lead">记住这四个字。<br>它决定接下来一段时间，<strong>什么能说，什么不能说</strong>。<br>不是判断对错，是判断风向。</p>
   </section>
 
-  <!-- 16 终章 -->
-  <section class="slide dark" data-theme="dark">
+  <!-- 15 终章 (金句+分享) -->
+  <section class="slide dark quote-slide" data-theme="dark"
+           data-quote-title="不会因为做过什么而后悔，只会因为没做什么而后悔。"
+           data-quote-sub="End of Episode 9.29 · 希望者联盟"
+           data-quote-tag="END">
+    <div class="ambient"></div>
     <p class="pullquote">不会因为做过什么而后悔，<br>只会因为 <span class="grad">没做什么</span> 而后悔。</p>
     <p class="end-meta">End of Episode 9.29 · 希望者联盟</p>
+    <button class="share-btn" data-share>
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"/></svg>
+      <span>保存图片</span>
+    </button>
   </section>
 
 </main>
 
 <script>
+  // === 基础 deck 控制 ===
   const deck = document.getElementById('deck');
   const slides = Array.from(document.querySelectorAll('.slide'));
   const dotsWrap = document.getElementById('dots');
   const curEl = document.getElementById('cur');
   const totalEl = document.getElementById('total');
   const nav = document.getElementById('nav');
+  const progress = document.getElementById('progress');
 
   totalEl.textContent = String(slides.length).padStart(2, '0');
 
@@ -615,21 +834,23 @@
         dotBtns.forEach(d => d.classList.remove('active'));
         dotBtns[idx].classList.add('active');
         curEl.textContent = String(idx + 1).padStart(2, '0');
+        progress.style.width = ((idx + 1) / slides.length * 100) + '%';
 
-        // 切换 nav 颜色
         const theme = entry.target.dataset.theme;
         nav.classList.toggle('on-light', theme === 'light');
+        document.body.classList.toggle('theme-light', theme === 'light');
       }
     });
   }, { threshold: [0.55] });
-
   slides.forEach(s => io.observe(s));
   slides[0].classList.add('in-view');
   dotBtns[0].classList.add('active');
+  progress.style.width = (1 / slides.length * 100) + '%';
 
+  // === 键盘 ===
   document.addEventListener('keydown', (e) => {
     const curIdx = slides.findIndex(s => s.classList.contains('in-view'));
-    if (['ArrowDown', 'PageDown', ' '].includes(e.key) && curIdx < slides.length - 1) {
+    if (['ArrowDown', 'PageDown'].includes(e.key) && curIdx < slides.length - 1) {
       e.preventDefault();
       slides[curIdx + 1].scrollIntoView({ behavior: 'smooth' });
     }
@@ -640,6 +861,230 @@
     if (e.key === 'Home') { e.preventDefault(); slides[0].scrollIntoView({ behavior: 'smooth' }); }
     if (e.key === 'End')  { e.preventDefault(); slides[slides.length - 1].scrollIntoView({ behavior: 'smooth' }); }
   });
+
+  // === 横向画廊 ===
+  const gallery = document.getElementById('gallery');
+  const gPrev = document.getElementById('gPrev');
+  const gNext = document.getElementById('gNext');
+  const gPagesWrap = document.getElementById('gPages');
+  const gCards = Array.from(gallery.querySelectorAll('.gallery-card'));
+
+  gCards.forEach((_, i) => {
+    const s = document.createElement('span');
+    if (i === 0) s.classList.add('active');
+    gPagesWrap.appendChild(s);
+  });
+  const gPageDots = Array.from(gPagesWrap.children);
+
+  function scrollGalleryTo(idx) {
+    const card = gCards[idx];
+    if (!card) return;
+    const offset = card.offsetLeft - (gallery.clientWidth - card.clientWidth) / 2;
+    gallery.scrollTo({ left: offset, behavior: 'smooth' });
+  }
+  function activeGalleryIdx() {
+    const center = gallery.scrollLeft + gallery.clientWidth / 2;
+    let best = 0, bestDist = Infinity;
+    gCards.forEach((c, i) => {
+      const cc = c.offsetLeft + c.clientWidth / 2;
+      const d = Math.abs(cc - center);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+    return best;
+  }
+  function updateGalleryUI() {
+    const i = activeGalleryIdx();
+    gPageDots.forEach((d, j) => d.classList.toggle('active', j === i));
+    gPrev.disabled = i === 0;
+    gNext.disabled = i === gCards.length - 1;
+  }
+  gPrev.addEventListener('click', () => scrollGalleryTo(Math.max(0, activeGalleryIdx() - 1)));
+  gNext.addEventListener('click', () => scrollGalleryTo(Math.min(gCards.length - 1, activeGalleryIdx() + 1)));
+  gallery.addEventListener('scroll', () => requestAnimationFrame(updateGalleryUI));
+  gPageDots.forEach((d, i) => d.addEventListener('click', () => scrollGalleryTo(i)));
+
+  // 桌面端：键盘左右切换画廊（当画廊屏激活时）
+  document.addEventListener('keydown', (e) => {
+    const gallerySlide = gallery.closest('.slide');
+    if (!gallerySlide.classList.contains('in-view')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); scrollGalleryTo(Math.min(gCards.length - 1, activeGalleryIdx() + 1)); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); scrollGalleryTo(Math.max(0, activeGalleryIdx() - 1)); }
+  });
+
+  // === 分享卡片（金句生成 1080×1920 PNG） ===
+  const toast = document.getElementById('toast');
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 2400);
+  }
+
+  document.querySelectorAll('[data-share]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const slide = btn.closest('.slide');
+      const title = slide.dataset.quoteTitle;
+      const sub = slide.dataset.quoteSub;
+      const tag = slide.dataset.quoteTag;
+      try {
+        const url = drawShareCard({ title, sub, tag });
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wish-alliance-${tag || 'card'}-${Date.now()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        showToast('已保存为图片');
+      } catch (err) {
+        console.error(err);
+        showToast('保存失败，请重试');
+      }
+    });
+  });
+
+  // Canvas 绘制
+  function drawShareCard({ title, sub, tag }) {
+    const W = 1080, H = 1920;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+
+    // 1) 背景：深色渐变
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#0a0a14');
+    bg.addColorStop(1, '#000000');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    // 柔光圆
+    function blob(x, y, r, color, alpha) {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(${color},${alpha})`);
+      g.addColorStop(1, `rgba(${color},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+    blob(160, 320, 700, '255,94,58', 0.30);
+    blob(900, 1500, 800, '41,151,255', 0.28);
+    blob(540, 960, 600, '162,89,255', 0.18);
+
+    // 2) 噪点轻薄
+    const noise = ctx.createImageData(W, H);
+    for (let i = 0; i < noise.data.length; i += 4) {
+      const v = Math.random() * 18;
+      noise.data[i] = v; noise.data[i+1] = v; noise.data[i+2] = v;
+      noise.data[i+3] = 18;
+    }
+    ctx.putImageData(noise, 0, 0);
+
+    // 3) 顶部小标签
+    ctx.fillStyle = 'rgba(245,245,247,0.6)';
+    ctx.font = '500 28px "SF Pro Display", -apple-system, "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('希望者联盟 · Episode 9.29', W / 2, 200);
+
+    // 标签胶囊
+    if (tag) {
+      ctx.font = '600 24px "SF Pro Display", -apple-system, "PingFang SC", sans-serif';
+      const tw = ctx.measureText(tag).width;
+      const padX = 18, padY = 11;
+      const bx = (W - tw - padX * 2) / 2, by = 240, bh = 40, bw = tw + padX * 2;
+      // 渐变描边
+      const tgrad = ctx.createLinearGradient(bx, 0, bx + bw, 0);
+      tgrad.addColorStop(0, '#ff5e3a'); tgrad.addColorStop(0.5, '#a259ff'); tgrad.addColorStop(1, '#2997ff');
+      ctx.strokeStyle = tgrad;
+      ctx.lineWidth = 2;
+      roundRect(ctx, bx, by, bw, bh, 20); ctx.stroke();
+      ctx.fillStyle = '#f5f5f7';
+      ctx.fillText(tag, W / 2, by + bh - padY + 1);
+    }
+
+    // 4) 主标题（带渐变高亮分词）
+    // 简单策略：识别"」「书名号" 或 显式 highlight 词。这里把整句拆行后画，
+    // 关键词（subString grad）用渐变填充
+    const lines = wrapTextSmart(ctx, title, W - 160, '600 88px "SF Pro Display", -apple-system, "PingFang SC", sans-serif');
+    ctx.font = '600 88px "SF Pro Display", -apple-system, "PingFang SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const startY = (H - lines.length * 110) / 2 - 100;
+    lines.forEach((line, i) => {
+      const y = startY + i * 110;
+      // 整体白色
+      ctx.fillStyle = '#f5f5f7';
+      ctx.fillText(line, W / 2, y);
+    });
+
+    // 渐变扫描层：在最后一行加一道渐变叠加（突出"金句感"）
+    const lastY = startY + (lines.length - 1) * 110;
+    const overlay = ctx.createLinearGradient(0, lastY, W, lastY + 90);
+    overlay.addColorStop(0, 'rgba(255,94,58,0)');
+    overlay.addColorStop(0.5, 'rgba(255,45,118,0.0)');
+    overlay.addColorStop(1, 'rgba(41,151,255,0)');
+
+    // 5) 副文
+    if (sub) {
+      ctx.font = '400 32px "SF Pro Display", -apple-system, "PingFang SC", sans-serif';
+      ctx.fillStyle = 'rgba(245,245,247,0.65)';
+      const subLines = wrapTextSmart(ctx, sub, W - 200, ctx.font);
+      const subY = startY + lines.length * 110 + 60;
+      subLines.forEach((line, i) => ctx.fillText(line, W / 2, subY + i * 46));
+    }
+
+    // 6) 底部品牌区
+    // 渐变分隔线
+    const lg = ctx.createLinearGradient(W / 2 - 200, 0, W / 2 + 200, 0);
+    lg.addColorStop(0, 'rgba(255,94,58,0)');
+    lg.addColorStop(0.5, 'rgba(162,89,255,0.8)');
+    lg.addColorStop(1, 'rgba(41,151,255,0)');
+    ctx.strokeStyle = lg;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 200, H - 220);
+    ctx.lineTo(W / 2 + 200, H - 220);
+    ctx.stroke();
+
+    ctx.fillStyle = '#f5f5f7';
+    ctx.font = '600 36px "SF Pro Display", -apple-system, "PingFang SC", sans-serif';
+    ctx.fillText('希望者联盟', W / 2, H - 180);
+
+    ctx.font = '400 24px "SF Pro Display", -apple-system, "PingFang SC", sans-serif';
+    ctx.fillStyle = 'rgba(245,245,247,0.45)';
+    ctx.fillText('sily001.github.io/wish-alliance', W / 2, H - 130);
+
+    return c.toDataURL('image/png');
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // 中英文混合换行
+  function wrapTextSmart(ctx, text, maxWidth, font) {
+    if (font) ctx.font = font;
+    // 按已有换行符分块
+    const blocks = text.split(/\n|[，,。]/).filter(s => s.length).map(s => s.trim());
+    const lines = [];
+    blocks.forEach(block => {
+      let line = '';
+      for (const ch of block) {
+        const test = line + ch;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          lines.push(line);
+          line = ch;
+        } else {
+          line = test;
+        }
+      }
+      if (line) lines.push(line);
+    });
+    return lines;
+  }
 </script>
 </body>
 </html>
